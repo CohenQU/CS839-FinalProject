@@ -4,10 +4,8 @@ from torch.utils.data import DataLoader
 from numpy import linalg as LA
 import os
 import argparse
-from otnae3 import *
-from ae1 import *
-from vae import *
-from otnvae import *
+from otnae import *
+from ae import *
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -68,16 +66,6 @@ if __name__ == "__main__":
         optimizer = torch.optim.Adam(model.parameters(), lr=lr)
         loss_criterion = torch.nn.MSELoss()
         trainer = AE_Trainer(native_dim, latent_dim, optimizer, model, loss_criterion)
-    elif encoder_model == "VAE":
-        model = VAE(native_dim, latent_dim, hidden_layer)
-        optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-        loss_criterion = VAE_loss_criterion()
-        trainer = VAE_Trainer(native_dim, latent_dim, optimizer, model, loss_criterion, epochs)
-    elif encoder_model == "OTNVAE":
-        model = OTNVAE(native_dim, hidden_layer)
-        optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-        loss_criterion = OTNVAE_loss_criterion(native_dim)
-        trainer = OTNVAE_Trainer(native_dim, optimizer, model, loss_criterion, epochs)
 
     for epoch in range(1, epochs+1):
         trainer.train(train_dataloader, epoch)
@@ -87,8 +75,3 @@ if __name__ == "__main__":
         trainer.draw_records(title="Running Loss (env={}, encoder={})".format(env_id, encoder_model),result_path=result_path, num_records=args.num_records)
     elif encoder_model == "AE" or encoder_model == "AE":
         trainer.draw_records(title="Running Loss (env={}, encoder={})".format(env_id, encoder_model),result_path=result_path)
-    elif encoder_model == "OTNVAE":
-        trainer.draw_records(title="Running Loss (env={}, encoder={})".format(env_id, encoder_model),result_path=result_path, num_records=args.num_records)
-    elif encoder_model == "VAE" or encoder_model == "VAE":
-        trainer.draw_records(title="Running Loss (env={}, encoder={})".format(env_id, encoder_model),result_path=result_path)
-    print(os.listdir())

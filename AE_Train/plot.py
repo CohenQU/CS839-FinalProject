@@ -5,7 +5,7 @@ import torch.nn.functional as F
 import os
 import sys
 import argparse
-from otnae1 import *
+from otnae import *
 
 def create_eval_dataset(dataset, num_of_samples):
     size = dataset.shape[0]

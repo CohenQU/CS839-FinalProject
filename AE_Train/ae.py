@@ -16,6 +16,7 @@ class AE(torch.nn.Module):
             torch.nn.Linear(native_dim, hidden_layer),
             torch.nn.LeakyReLU(0.2),
             torch.nn.Linear(hidden_layer, latent_dim),
+            torch.nn.Tanh(),
         )
         
         self.decoder = torch.nn.Sequential(

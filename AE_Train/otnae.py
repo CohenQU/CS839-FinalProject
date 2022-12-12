@@ -38,19 +38,18 @@ class OTNAE(torch.nn.Module):
         self.decoders = torch.nn.ModuleList(
             [Decoder(native_dim, hidden_layer, 1) for i in range(native_dim)]
         )
-        self.linear = torch.nn.Linear(native_dim * native_dim, native_dim, bias=False)
-
+        self.tanh = torch.nn.Tanh()
+    
     def forward(self, x):
-        encoded = self.encoder(x)
+        encoded = self.tanh(self.encoder(x))
         num_of_inputs = x.shape[0]
-        combinators = [torch.zeros(num_of_inputs, self.native_dim * self.native_dim) for i in range(self.native_dim)]
         outputs = torch.zeros(self.native_dim, num_of_inputs, self.native_dim)
         index = 0
         for decoder in self.decoders:
             for i in range(index, self.native_dim):
-                combinators[i][:, index * self.native_dim : (index + 1) * self.native_dim] = decoder(encoded[:, index].reshape(-1, 1))
-            outputs[index, :, :] = self.linear(combinators[index])
+                outputs[i, :, :] += decoder(encoded[:, index].reshape(-1, 1))
             index += 1
+        outputs = self.tanh(outputs)
         return outputs
 
 class OTNAE_loss_criterion(torch.nn.Module):
@@ -61,10 +60,11 @@ class OTNAE_loss_criterion(torch.nn.Module):
     def forward(self, recons, original):
         total_loss = 0.0
         recon_loss_list = []
+        # weights = [1, 2, 3, 4, 5, 6, 7, 8]
         for i in range(self.native_dim): 
             recon = recons[i,:,:]      
             recon_loss = F.mse_loss(recon, original)
-            total_loss += recon_loss
+            total_loss += (i+1) * recon_loss
             recon_loss_list.append(recon_loss.item())
 
         total_loss = total_loss / self.native_dim
