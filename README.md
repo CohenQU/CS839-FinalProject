@@ -1,8 +1,10 @@
 # CS839-FinalProject
 
-## Python environment configuration
+## 1. Python environment configuration
 
-### For MacOS with M1 chip (thanks [geyang](https://github.com/openai/mujoco-py/issues/682), and [wookayin](https://github.com/openai/mujoco-py/issues/662))
+### 1.1. For MacOS with M1 chip (thanks [geyang](https://github.com/openai/mujoco-py/issues/682), and [wookayin](https://github.com/openai/mujoco-py/issues/662))
+
+#### 1.1.1. Background
 
 Until `mujoco-py` gets updated to officially support DeepMind's MuJoCo 2.1+, you can try the following as a hacky workaround.
 First, make sure your python is running as arm64 (NOT x86_64 under Rosetta 2). For instance, you can use `miniforge3`.
@@ -14,14 +16,14 @@ $ lipo -archs $(which python3)
 arm64
 ```
 
-#### Pre-requisits
+#### 1.1.2. Pre-requisits
 
 - Use `Miniforge` as your Conda environment
   - If you want to keep both Miniforge and Anaconda/Miniconda, you can refer to this [tutorial](https://youtu.be/w2qlou7n7MA).
 - Install `glfw` via `brew install glfw`. Note the location for the installation
 - Download [MuJoCo2.1.1](https://github.com/deepmind/mujoco/releases/tag/2.1.1) image that ends with a \*.dmg. The new mujoco2.1.1 is released as a Framework. You can copy the MuJoCo.app into /Applications/ folder.
 
-#### Installation Script
+#### 1.1.3. Installation Script
 
 Make a file locally called `install-mujoco.sh`, and put the following into it.
 
@@ -44,7 +46,7 @@ export CC=/opt/homebrew/bin/gcc-11         # see https://github.com/openai/mujoc
 pip install mujoco-py && python -c 'import mujoco_py'
 ```
 
-### For MacOS
+### 1.2. For MacOS and Win
 
 ```
 conda create --name <env> --file requirements.txt
@@ -55,16 +57,16 @@ cd gym_mujoco
 pip install -e .
 ```
 
-## Supported variables
+## 2. Learning process
+
+### 2.1. Supported variables
 
 - Environments (\[env_id\] (\[native_dim\])): Hopper-v3 (3), HalfCheetah-v3 (6), Walker2d-v3 (6), Ant-v3 (8), Swimmer20-v3 (19), ReacherTracker20-v3 (20)
 - Encoder models (\[encoder_model\]): Vanilla Auto-encoder (AE), One-to-N Auto-encoder (OTNAE)
 - Agents (\[agent\]): random, trained
 - Data in .npz (\[data_name\]): states, actions, rewards, next_states, next_actions, dones
 
-## Learning process
-
-### Train native agent
+### 2.2. Train native agent
 
 ```
 cd RL_Train
@@ -73,9 +75,9 @@ python3 train.py --algo td3 --gym-packages gym-mujoco --env [env_id] --seed [ran
 
 agents will be saved at `RL_Train/logs/td3/[env_id]_[seed]/[env_id].zip`
 
-### Generate demonstrations
+### 2.3. Generate demonstrations
 
-#### Expert
+#### 2.3.1. Expert
 
 ```
 cd RL_Train/utils
@@ -84,7 +86,7 @@ python3 generate_demo.py --env-id [env_id] --model_path [model_path] --num-actio
 
 data will be saved at `RL_Train/utils/data/[env_id]/trained.npz`
 
-#### Random
+#### 2.3.2. Random
 
 ```
 cd RL_Train/utils
@@ -93,7 +95,7 @@ python3 generate_demon.py --env-id [env_id] --model_path [model_path] --num-acti
 
 data will be saved at `RL_Train/utils/data/[env_id]/random.npz`
 
-### Decompose .npz
+### 2.4. Decompose .npz
 
 ```
 cd RL_Train/utils
@@ -102,7 +104,7 @@ python3 split.py --env-id [env_id] --agent [agent] --data_name [data_name]
 
 data will be saved at `RL_Train/utils/data/[env_id]/[agent]_[data_name].npy`
 
-### Train Auto-encoder
+### 2.5. Train Auto-encoder
 
 ```
 cd AE_Train
@@ -111,14 +113,14 @@ python3 train.py --env_id [env_id] --native_dim [native_dim] --latent_dim [laten
 
 models with a visualization of the running loss will be saved in the directory `AE_train/[save_dir]`
 
-### Train RL agents with learned latent action space in source environment
+### 2.6. Train RL agents with learned latent action space in source environment
 
 ```
 cd RL_Train
 python3 train.py --algo td3 --gym-packages gym-mujoco --env [env_id] --env-kwargs latent_dim:[latent_dim] encoder_model:\"[encoder_model]\" native_dim:[native_dim] hidden_layer:64 model_path:\"[model_path]\" --seed [seed] --n-timesteps 1000000
 ```
 
-### Train RL agents with learned latent action space in target environment
+### 2.7. Train RL agents with learned latent action space in target environment
 
 ```
 cd RL_Train
