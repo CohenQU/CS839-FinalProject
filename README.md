@@ -2,15 +2,57 @@
 
 ## Python environment configuration
 
+### For MacOS with M1 chip (thanks [geyang](https://github.com/openai/mujoco-py/issues/682), and [wookayin](https://github.com/openai/mujoco-py/issues/662))
+
+Until `mujoco-py` gets updated to officially support DeepMind's MuJoCo 2.1+, you can try the following as a hacky workaround.
+First, make sure your python is running as arm64 (NOT x86_64 under Rosetta 2). For instance, you can use `miniforge3`.
+
 ```
-conda create -n <env_name> python=3.9
+$ which python3
+/Users/$ID/.miniforge3/bin/python3
+$ lipo -archs $(which python3)
+arm64
+```
+
+#### Pre-requisits
+
+- Use `Miniforge` as your Conda environment
+  - If you want to keep both Miniforge and Anaconda/Miniconda, you can refer to this [tutorial](https://youtu.be/w2qlou7n7MA).
+- Install `glfw` via `brew install glfw`. Note the location for the installation
+- Download [MuJoCo2.1.1](https://github.com/deepmind/mujoco/releases/tag/2.1.1) image that ends with a \*.dmg. The new mujoco2.1.1 is released as a Framework. You can copy the MuJoCo.app into /Applications/ folder.
+
+#### Installation Script
+
+Make a file locally called `install-mujoco.sh`, and put the following into it.
+
+```
+mkdir -p $HOME/.mujoco/mujoco210         # Remove existing installation if any
+ln -sf /Applications/MuJoCo.app/Contents/Frameworks/MuJoCo.framework/Versions/Current/Headers/ $HOME/.mujoco/mujoco210/include
+mkdir -p $HOME/.mujoco/mujoco210/bin
+ln -sf /Applications/MuJoCo.app/Contents/Frameworks/MuJoCo.framework/Versions/Current/libmujoco.2.*.dylib $HOME/.mujoco/mujoco210/bin/libmujoco210.dylib
+ln -sf /Applications/MuJoCo.app/Contents/Frameworks/MuJoCo.framework/Versions/Current/libmujoco.2.*.dylib /usr/local/lib/
+
+# For M1 (arm64) mac users:
+# The released binary doesn't ship glfw3, so need to install on your own
+brew install glfw
+ln -sf /opt/homebrew/lib/libglfw.3.dylib $HOME/.mujoco/mujoco210/bin
+
+# Please make sure /opt/homebrew/bin/gcc-11  exists: install gcc if you haven't already
+# brew install gcc
+export CC=/opt/homebrew/bin/gcc-11         # see https://github.com/openai/mujoco-py/issues/605
+
+pip install mujoco-py && python -c 'import mujoco_py'
+```
+
+### For MacOS
+
+```
+conda create --name <env> --file requirements.txt
 conda activate <env_name>
 cd RL_Train
-
 pip install -r requirement.txt
 cd gym_mujoco
 pip install -e .
-
 ```
 
 ## Supported variables
